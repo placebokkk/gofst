@@ -3,7 +3,7 @@ package gofst
 
 import "testing"
 
-func TestFfst(t *testing.T) {
+func TestFst(t *testing.T) {
 	fst := New()
 	fst.AddState()
 	fst.SetStart(0)
