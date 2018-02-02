@@ -22,6 +22,14 @@ extern "C" {
   void FstFree(CFst f);
   void AddState(CFst f);
   void SetStart(CFst f, int startState);
+  void Compose(CFst fst1, CFst fst2, CFst ofst);
+  void ArcSortInput(CFst fst);
+  void ArcSortOutput(CFst fst);
+
+  CFst FstRead(char* filename);
+  void FstWrite(CFst fst, char* filename);
+
+  typedef void* CSymbolTable;
 #ifdef __cplusplus
 }
 #endif

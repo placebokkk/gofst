@@ -8,11 +8,12 @@ import "C"
 
 //Fst structy
 type Fst struct {
-	fst C.CFst
+	fst      C.CFst
+	symTable C.CSymbolTable
 }
 
-//New create a new Fst object
-func New() Fst {
+//FstNew create a new Fst object
+func FstNew() Fst {
 	var ret Fst
 	ret.fst = C.FstInit()
 	return ret
@@ -31,4 +32,33 @@ func (f Fst) AddState() {
 //SetStart set a new id for start state
 func (f Fst) SetStart(state C.int) {
 	C.SetStart(f.fst, state)
+}
+
+//Compose compose two fst to a new fst
+func (f Fst) Compose(f2 Fst) Fst {
+	ofst := FstNew()
+	C.Compose(f.fst, f2.fst, ofst.fst)
+	return ofst
+}
+
+//ArcSortInput sort output arc
+func (f Fst) ArcSortInput() {
+	C.ArcSortInput(f.fst)
+}
+
+//ArcSortOuput sort input arc
+func (f Fst) ArcSortOuput() {
+	C.ArcSortOutput(f.fst)
+}
+
+//ArcSortOuput sort input arc
+func (f Fst) Write(filename string) {
+	C.FstWrite(f.fst, (C.CString)(filename))
+}
+
+//ArcSortOuput sort input arc
+func FstRead(filename string) Fst {
+	var ret Fst
+	ret.fst = C.FstRead((C.CString)(filename))
+	return ret
 }
