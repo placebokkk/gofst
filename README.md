@@ -27,4 +27,4 @@ import (
 - support more operations
 - more real world use examples
 
-I am new to golang and openfst. Welcome any comments and suggestions.
+I am new to golang and openfst. Welcome any comments.
