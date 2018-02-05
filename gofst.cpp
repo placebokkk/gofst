@@ -6,6 +6,7 @@
 
 using namespace fst;
 
+//FST API
 CFst FstInit()
 {
   StdVectorFst *fst_ = new StdVectorFst();
@@ -66,6 +67,7 @@ void FstArcSortOutput(CFst fst)
   ArcSort(fst_, OLabelCompare<StdArc>());
   //ArcSort(fst_, StdOLabelCompare())
 }
+
 //IO
 CFst FstRead(char* filename)
 {
@@ -75,15 +77,117 @@ CFst FstRead(char* filename)
 }
 
 
-void FstWrite(CFst fst, char* filename)
+int FstWrite(CFst fst, char* filename)
 {
   StdVectorFst * fst_ = (StdVectorFst*)fst;
   string f_str = filename;
-  fst_->Write(f_str);
-  return;
+  return fst_->Write(f_str);
 }
 
 
+void FstSetInputSymbols(CFst fst, CSymbolTable st){
+  StdVectorFst * fst_ = (StdVectorFst*)fst;
+  SymbolTable * st_ = (SymbolTable * ) st;
+  fst_->SetInputSymbols(st_);
+}
+
+CSymbolTable FstInputSymbols(CFst fst)
+{
+  StdVectorFst * fst_ = (StdVectorFst*)fst;
+  return (CSymbolTable) fst_->InputSymbols();
+}
+
+void FstSetOutputSymbols(CFst fst, CSymbolTable st)
+{
+  StdVectorFst * fst_ = (StdVectorFst*)fst;
+  SymbolTable * st_ = (SymbolTable * ) st;
+  fst_->SetOutputSymbols(st_);
+}
+
+CSymbolTable FstOutputSymbols(CFst fst)
+{
+  StdVectorFst * fst_ = (StdVectorFst*)fst;
+  return (CSymbolTable) fst_->OutputSymbols();
+}
+
+//SymbolTable API
+int SymbolTableEqual(CSymbolTable st1, CSymbolTable st2)
+{
+  SymbolTable * st1_ = (SymbolTable *) st1;
+  SymbolTable * st2_ = (SymbolTable *) st2;
+  if( st1_->LabeledCheckSum() == st2_->LabeledCheckSum() )
+  {
+    return 1;
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+int SymbolTableWrite(CSymbolTable st, char* filename)
+{
+  SymbolTable * st_ = (SymbolTable*) st;
+  string f_str = filename;
+  return st_->Write(f_str);
+}
+
+int SymbolTableFindKey(CSymbolTable st, char *symbol)
+{
+  SymbolTable * st_ = (SymbolTable*) st;
+  return st_->Find(symbol);
+}
+char* SymbolTableFindSymbol(CSymbolTable st, int key)
+{
+  
+  SymbolTable * st_ = (SymbolTable*) st;
+  string symbol = st_->Find(key);
+  int l = symbol.length() + 1;
+  char *c =  new char[l];
+  strcpy(c, symbol.c_str());
+  return c;
+}
+
+int SymbolTableHasKey(CSymbolTable st, int key){
+  SymbolTable * st_ = (SymbolTable*) st;
+  if( st_->Member(key) )
+  {
+    return 1;
+  }
+  else
+  {
+    return 0;
+  }
+}
+int SymbolTableHasSymbol(CSymbolTable st, char *symbol){
+  SymbolTable * st_ = (SymbolTable*) st;
+  if( st_->Member(symbol) )
+  {
+    return 1;
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+CSymbolTable SymbolTableReadText(char *filename)
+{
+  string f_str = filename;
+  SymbolTable * st_ = SymbolTable::ReadText(f_str);
+  return (CSymbolTable)st_;
+}
+
+CSymbolTable SymbolTableReadBinary(char *filename)
+{
+  string f_str = filename;
+  SymbolTable * st_ = SymbolTable::Read(f_str);
+  return (CSymbolTable)st_;
+}
+
+void FreeString(char * c){
+  delete [] c;
+}
 //怎么实现StateIterator
 
 //   for (StateIterator<StdFst> siter(fst);

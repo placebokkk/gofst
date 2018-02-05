@@ -16,9 +16,12 @@
 extern "C" {
 #endif
 
-  /**********Fst**********/
+  /**********Declare**********/
   typedef void* CFst;
   typedef void* CArc;
+  typedef void* CSymbolTable;
+
+  /**********Fst**********/
   //fst init/free
   CFst FstInit(void);
   void FstFree(CFst fst);
@@ -35,14 +38,33 @@ extern "C" {
   void FstArcSortInput(CFst fst);
   void FstArcSortOutput(CFst fst);
 
+  void FstSetInputSymbols(CFst fst, CSymbolTable st);
+  CSymbolTable FstInputSymbols(CFst fst);
+  void FstSetOutputSymbols(CFst fst, CSymbolTable st);
+  CSymbolTable FstOutputSymbols(CFst fst);
+
   //I/O
   CFst FstRead(char* filename);
-  void FstWrite(CFst fst, char* filename);
+  int FstWrite(CFst fst, char* filename);
 
 
   /**********Symboltable**********/
-  typedef void* CSymbolTable;
 
+  int SymbolTableEqual(CSymbolTable st1, CSymbolTable st2);
+
+  int SymbolTableWrite(CSymbolTable st, char *filename);
+
+  //In C++ openfst, Find use for finding both key and symbol,by parameter overloading.
+  //In C wrapper, we have to declare two different interface.
+  int SymbolTableFindKey(CSymbolTable st, char *symbol);
+  char* SymbolTableFindSymbol(CSymbolTable st, int key);
+  int SymbolTableHasKey(CSymbolTable st, int key);
+  int SymbolTableHasSymbol(CSymbolTable st, char *symbol);
+
+  void FreeString(char * c);
+
+  CSymbolTable SymbolTableReadText(char *filename);
+  CSymbolTable SymbolTableReadBinary(char *filename);
 
   /**********State Iterator**********/
   //Use CStateId or just use int or int64?

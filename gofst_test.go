@@ -48,3 +48,23 @@ func TestArcIterator(t *testing.T) {
 		}
 	}
 }
+
+func TestSymbolTableReadText(t *testing.T) {
+	syms := SymbolTableReadText("ex01/ascii.syms")
+	for i := 33; i < 50; i++ {
+		symbol := syms.FindSymbol(i)
+		fmt.Println(symbol)
+		fmt.Println(syms.FindKey(symbol))
+	}
+
+}
+
+func TestSymbolTableRead(t *testing.T) {
+	syms := SymbolTableRead("data/lexicon/isyms.fst")
+	for i := 0; i <= 8; i++ {
+		symbol := syms.FindSymbol(i)
+		fmt.Println(symbol)
+		fmt.Println(syms.FindKey(symbol))
+	}
+
+}

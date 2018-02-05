@@ -8,15 +8,21 @@ import "C"
 
 //Fst structy
 type Fst struct {
-	cfst       C.CFst
-	cisyms C.CSymbolTable
-	cosyms C.CSymbolTable
+	cfst  C.CFst
+	isyms SymbolTable
+	osyms SymbolTable
+}
+
+type SymbolTable struct {
+	csyms C.CSymbolTable
 }
 
 //FstNew create a new Fst object
 func FstInit() Fst {
 	var ret Fst
 	ret.cfst = C.FstInit()
+	//ret.isyms = isyms
+	//ret.isyms = isyms
 	return ret
 }
 
@@ -45,7 +51,8 @@ func (f Fst) AddArc(state_id int, arc Arc) {
 //OPERATION
 //In pyfst, fst object also carries the isyms and osysm.
 //We want to use the same design.
-//TODO support isyms and osyms
+//TODO bugs! stringWeight not equal! What is stringWeight
+//and how is that used here
 func (f Fst) Determinize() Fst {
 	ofst := FstInit()
 	C.FstDeterminize(f.cfst, ofst.cfst)
@@ -53,12 +60,12 @@ func (f Fst) Determinize() Fst {
 }
 
 //Compose compose two fst to a new fst
+//TODO support isyms and osyms verification
 func (f Fst) Compose(f2 Fst) Fst {
 	ofst := FstInit()
 	C.FstCompose(f.cfst, f2.cfst, ofst.cfst)
 	return ofst
 }
-
 
 //ArcSortInput sort output arc
 func (f Fst) ArcSortInput() {
@@ -77,10 +84,59 @@ func (f Fst) Write(filename string) {
 	C.FstWrite(f.cfst, (C.CString)(filename))
 }
 
+//Write write FST to file
+func (f Fst) SetInputSymbols(st SymbolTable) {
+	f.isyms = st
+}
+
+//Write write FST to file
+func (f Fst) SetOutputSymbols(st SymbolTable) {
+	f.osyms = st
+}
+
 //FstRead read FST from file
 func FstRead(filename string) Fst {
 	var ret Fst
 	ret.cfst = C.FstRead((C.CString)(filename))
+	return ret
+}
+
+//FstNew create a new Fst object
+func FSet() Fst {
+	var ret Fst
+	ret.cfst = C.FstInit()
+	return ret
+}
+
+//SymbolTable
+func (st SymbolTable) FindKey(symbol string) int {
+	return int(C.SymbolTableFindKey(st.csyms, C.CString(symbol)))
+}
+
+//mempry leak here if do not free the csymbol?
+func (st SymbolTable) FindSymbol(key int) string {
+	//defer C.FreeString(csymbol)
+	return C.GoString(C.SymbolTableFindSymbol(st.csyms, C.int(key)))
+
+}
+
+func (st SymbolTable) HasKey(key int) bool {
+	return C.SymbolTableHasKey(st.csyms, C.int(key)) > 0
+}
+
+func (st SymbolTable) HasSymbol(symbol string) bool {
+	return C.SymbolTableHasSymbol(st.csyms, C.CString(symbol)) > 0
+}
+
+func SymbolTableReadText(filename string) SymbolTable {
+	var ret SymbolTable
+	ret.csyms = C.SymbolTableReadText((C.CString)(filename))
+	return ret
+}
+
+func SymbolTableRead(filename string) SymbolTable {
+	var ret SymbolTable
+	ret.csyms = C.SymbolTableReadBinary((C.CString)(filename))
 	return ret
 }
 
