@@ -37,8 +37,23 @@ func (f Fst) AddState() {
 }
 
 //SetStart set a new id for start state
-func (f Fst) SetStart(state C.int) {
-	C.FstSetStart(f.cfst, state)
+func (f Fst) SetStart(state int) {
+	C.FstSetStart(f.cfst, C.int(state))
+}
+
+//GetStart set a new id for start state
+func (f Fst) GetStart() int {
+	return int(C.FstGetStart(f.cfst))
+}
+
+//IsFinal set a new id for start state
+func (f Fst) IsFinal(state int) bool {
+	return C.FstIsFinal(f.cfst, C.int(state)) > 0
+}
+
+//SetStart set a new id for start state
+func (f Fst) SetFinal(state int, weight float64) {
+	C.FstSetFinal(f.cfst, C.int(state), C.float(weight))
 }
 
 //fst.AddArc(1, StdArc(3, 3, 2.5, 2));
@@ -105,6 +120,13 @@ func (f Fst) Invert() Fst {
 func (f Fst) Minimize() Fst {
 	C.FstMinimize(f.cfst)
 	return f
+}
+
+//ShortestPath
+func (f Fst) ShortestPath(n int) Fst {
+	ofst := FstInit()
+	C.FstShortestPath(f.cfst, ofst.cfst, C.int(n))
+	return ofst
 }
 
 //ArcSortInput sort output arc
@@ -294,4 +316,26 @@ func (aiter ArcIterator) Value() Arc {
 
 func (aiter ArcIterator) Done() bool {
 	return int(C.ArcIteratorDone(aiter.caiter)) > 0
+}
+
+//return [[arc, arc,...], [arc,arc,..]..]
+//a [][]Arc
+func (fst Fst) Paths() [][]Arc {
+	return _visit(fst, fst.GetStart(), []Arc{})
+}
+
+func _visit(fst Fst, state_id int, prefix_path []Arc) [][]Arc {
+	var ret [][]Arc = make([][]Arc, 0)
+	if fst.IsFinal(state_id) {
+		ret = append(ret, prefix_path)
+	}
+	for aiter := ArcIteratorInit(fst, state_id); !aiter.Done(); aiter.Next() {
+		arc := aiter.Value()
+		paths := _visit(fst, arc.GetNextState(), append(prefix_path, arc))
+		for _, path := range paths {
+			ret = append(ret, path)
+		}
+
+	}
+	return ret
 }

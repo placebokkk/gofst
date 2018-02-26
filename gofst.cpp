@@ -31,6 +31,31 @@ void FstSetStart(CFst fst, int start_state)
   fst_->SetStart(start_state);
 }
 
+int FstGetStart(CFst fst)
+{
+  StdVectorFst * fst_ = (StdVectorFst*)fst;
+  return fst_->Start();
+}  
+
+int FstIsFinal(CFst fst, int state)
+{
+  StdVectorFst * fst_ = (StdVectorFst*)fst;
+  if (fst_->Final(state) != StdArc::Weight::Zero())
+  {
+    return 1;
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+void FstSetFinal(CFst fst, int state, float weight)
+{
+  StdVectorFst * fst_ = (StdVectorFst*)fst;
+  fst_->SetFinal(state, weight);
+}
+
 void FstAddArc(CFst fst, int state, CArc arc)
 {
   StdVectorFst * fst_ = (StdVectorFst*)fst;
@@ -76,6 +101,12 @@ void FstMinimize(CFst fst)
   Minimize(fst_);
 }
 
+void FstShortestPath(CFst fst,  CFst ofst, int n)
+{
+  StdVectorFst * ifst_ = (StdVectorFst*)fst;
+  StdVectorFst * ofst_ = (StdVectorFst*)ofst;
+  ShortestPath(*ifst_, ofst_, n);
+}
 //ArcSort
 void FstArcSortInput(CFst fst)
 {
@@ -266,7 +297,6 @@ int StateIteratorDone(CStateIterator si)
   return (int) ((CStateId)siter->Done());
   
 }
-
 
 CArc ArcInit(int ilabel,int olabel,float weight,int state_id)
 {

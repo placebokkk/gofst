@@ -13,6 +13,18 @@ func TestBasic(t *testing.T) {
 	fst.Free()
 }
 
+func TestIsFinal(t *testing.T) {
+	fst := FstInit()
+	fst.AddState()
+	fst.AddState()
+	fst.AddState()
+	fst.SetStart(0)
+	fst.SetFinal(2, 0.1)
+	fmt.Println(fst.IsFinal(0))
+	fmt.Println(fst.IsFinal(1))
+	fmt.Println(fst.IsFinal(2))
+}
+
 func TestCompose(t *testing.T) {
 	input := FstRead("ex01/Marsman_t.fst")
 	model := FstRead("ex01/lexicon_opt.fst")
@@ -207,6 +219,40 @@ func TestFstAddArc(t *testing.T) {
 		for aiter := ArcIteratorInit(fst, state); !aiter.Done(); aiter.Next() {
 			arc := aiter.Value()
 			fmt.Println(arc.GetILabel(), arc.GetOLabel(), arc.GetWeight(), arc.GetNextState())
+		}
+	}
+
+}
+
+func TestFstPaths(t *testing.T) {
+	fst := FstInit()
+	fst.SetInputSymbols(SymbolTableInit())
+	fst.SetOutputSymbols(SymbolTableInit())
+
+	fst.AddState()
+	fst.AddState()
+	fst.AddState()
+	fst.AddState()
+
+	fst.AddArc(0, 1, "上", "上", 0.1)
+	fst.AddArc(1, 2, "海", "海", 0.4)
+	fst.AddArc(1, 3, "交", "学", 0.3)
+	fst.SetStart(0)
+	fst.SetFinal(2, 0.1)
+	fst.SetFinal(3, 0.1)
+	fst.Write("addarc.fst")
+	paths := fst.Paths()
+
+	for idx, path := range paths {
+		fmt.Println(idx)
+		for _, arc := range path {
+			fmt.Print(arc.GetILabel())
+			fmt.Print("-")
+			fmt.Print(arc.GetOLabel())
+			fmt.Print("-")
+			fmt.Print(arc.GetNextState())
+			fmt.Print("-")
+			fmt.Println(arc.GetWeight())
 		}
 	}
 

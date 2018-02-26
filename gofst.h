@@ -29,6 +29,10 @@ extern "C" {
   //fst basic 
   void FstAddState(CFst fst);
   void FstSetStart(CFst fst, int start_state);
+  int FstGetStart(CFst fst);
+  int FstIsFinal(CFst fst, int state);
+  void FstSetFinal(CFst fst, int state, float weight);
+
   void FstAddArc(CFst fst, int start_state, CArc arc);
   CFst FstCopy(CFst ifst);
 
@@ -39,7 +43,7 @@ extern "C" {
   void FstRmEpsilon(CFst fst);
   void FstInvert(CFst fst);
   void FstMinimize(CFst fst);
-
+  void FstShortestPath(CFst fst,  CFst ofst, int n);
   void FstArcSortInput(CFst fst);
   void FstArcSortOutput(CFst fst);
 
