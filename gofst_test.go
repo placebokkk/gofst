@@ -256,4 +256,20 @@ func TestFstPaths(t *testing.T) {
 		}
 	}
 
+	//test shortestpath
+	best_path := fst.ShortestPath(1)
+	paths = best_path.Paths()
+	for idx, path := range paths {
+		fmt.Println(idx)
+		for _, arc := range path {
+			fmt.Print(arc.GetILabel())
+			fmt.Print("-")
+			fmt.Print(arc.GetOLabel())
+			fmt.Print("-")
+			fmt.Print(arc.GetNextState())
+			fmt.Print("-")
+			fmt.Println(arc.GetWeight())
+		}
+	}
+
 }
