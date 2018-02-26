@@ -30,11 +30,16 @@ extern "C" {
   void FstAddState(CFst fst);
   void FstSetStart(CFst fst, int start_state);
   void FstAddArc(CFst fst, int start_state, CArc arc);
+  CFst FstCopy(CFst ifst);
 
   //operation
   void FstCompose(CFst fst1, CFst fst2, CFst ofst);
-  void FstDeterminize(CFst fst1,  CFst ofst);
-  
+  void FstCompose(CFst fst1, CFst fst2, CFst ofst);
+  void FstDeterminize(CFst fst, CFst ofst);
+  void FstRmEpsilon(CFst fst);
+  void FstInvert(CFst fst);
+  void FstMinimize(CFst fst);
+
   void FstArcSortInput(CFst fst);
   void FstArcSortOutput(CFst fst);
 
@@ -49,6 +54,7 @@ extern "C" {
 
 
   /**********Symboltable**********/
+  CSymbolTable SymbolTableInit(void);
 
   int SymbolTableEqual(CSymbolTable st1, CSymbolTable st2);
 
@@ -60,6 +66,9 @@ extern "C" {
   char* SymbolTableFindSymbol(CSymbolTable st, int key);
   int SymbolTableHasKey(CSymbolTable st, int key);
   int SymbolTableHasSymbol(CSymbolTable st, char *symbol);
+
+  int SymbolTableAddSymbol(CSymbolTable st, char *symbol);
+  int SymbolTableAddSymbolKey(CSymbolTable st, char *symbol, int key);
 
   void FreeString(char * c);
 

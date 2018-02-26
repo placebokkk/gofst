@@ -1,4 +1,4 @@
-// gofst.go
+//Package gofst
 package gofst
 
 // #cgo CXXFLAGS: -std=c++11
@@ -44,8 +44,30 @@ func (f Fst) SetStart(state C.int) {
 //fst.AddArc(1, StdArc(3, 3, 2.5, 2));
 
 //AddState add a new state for fst
-func (f Fst) AddArc(state_id int, arc Arc) {
-	C.FstAddArc(f.cfst, C.int(state_id), arc.carc)
+func (f Fst) AddArcRaw(stateId int, arc Arc) {
+	C.FstAddArc(f.cfst, C.int(stateId), arc.carc)
+}
+
+func (f Fst) AddArc(src int, tgt int, isym string, osym string, weight float64) {
+	var ilabel, olabel int
+	if f.isyms.HasSymbol(isym) {
+		ilabel = f.isyms.FindKey(isym)
+	} else {
+		ilabel = f.isyms.AddSymbol(isym)
+	}
+	if f.osyms.HasSymbol(osym) {
+		olabel = f.osyms.FindKey(osym)
+	} else {
+		olabel = f.osyms.AddSymbol(osym)
+	}
+	arc := ArcInit(int(ilabel), int(olabel), weight, tgt)
+	C.FstAddArc(f.cfst, C.int(src), arc.carc)
+}
+
+func (f Fst) Copy() Fst {
+	var ret Fst
+	ret.cfst = C.FstCopy(f.cfst)
+	return ret
 }
 
 //OPERATION
@@ -67,6 +89,24 @@ func (f Fst) Compose(f2 Fst) Fst {
 	return ofst
 }
 
+//RmEpsilon
+func (f Fst) RmEpsilon() Fst {
+	C.FstRmEpsilon(f.cfst)
+	return f
+}
+
+//Invert
+func (f Fst) Invert() Fst {
+	C.FstInvert(f.cfst)
+	return f
+}
+
+//Minimize
+func (f Fst) Minimize() Fst {
+	C.FstMinimize(f.cfst)
+	return f
+}
+
 //ArcSortInput sort output arc
 func (f Fst) ArcSortInput() {
 	C.FstArcSortInput(f.cfst)
@@ -84,13 +124,13 @@ func (f Fst) Write(filename string) {
 	C.FstWrite(f.cfst, (C.CString)(filename))
 }
 
-//Write write FST to file
-func (f Fst) SetInputSymbols(st SymbolTable) {
+//SetInputSymbols set FST input SymbolTable
+func (f *Fst) SetInputSymbols(st SymbolTable) {
 	f.isyms = st
 }
 
-//Write write FST to file
-func (f Fst) SetOutputSymbols(st SymbolTable) {
+//SetOutputSymbols set FST output SymbolTable
+func (f *Fst) SetOutputSymbols(st SymbolTable) {
 	f.osyms = st
 }
 
@@ -101,14 +141,15 @@ func FstRead(filename string) Fst {
 	return ret
 }
 
-//FstNew create a new Fst object
-func FSet() Fst {
-	var ret Fst
-	ret.cfst = C.FstInit()
+//SymbolTable
+func SymbolTableInit() SymbolTable {
+	var ret SymbolTable
+	ret.csyms = C.SymbolTableInit()
+	//ret.isyms = isyms
+	//ret.isyms = isyms
 	return ret
 }
 
-//SymbolTable
 func (st SymbolTable) FindKey(symbol string) int {
 	return int(C.SymbolTableFindKey(st.csyms, C.CString(symbol)))
 }
@@ -128,6 +169,14 @@ func (st SymbolTable) HasSymbol(symbol string) bool {
 	return C.SymbolTableHasSymbol(st.csyms, C.CString(symbol)) > 0
 }
 
+func (st SymbolTable) AddSymbol(symbol string) int {
+	return int(C.SymbolTableAddSymbol(st.csyms, C.CString(symbol)))
+}
+
+func (st SymbolTable) AddSymbolKey(symbol string, key int) int {
+	return int(C.SymbolTableAddSymbolKey(st.csyms, C.CString(symbol), C.int(key)))
+}
+
 func SymbolTableReadText(filename string) SymbolTable {
 	var ret SymbolTable
 	ret.csyms = C.SymbolTableReadText((C.CString)(filename))
@@ -138,6 +187,11 @@ func SymbolTableRead(filename string) SymbolTable {
 	var ret SymbolTable
 	ret.csyms = C.SymbolTableReadBinary((C.CString)(filename))
 	return ret
+}
+
+//Write write FST to file
+func (st SymbolTable) Write(filename string) {
+	C.SymbolTableWrite(st.csyms, (C.CString)(filename))
 }
 
 // Iterator

@@ -37,7 +37,11 @@ void FstAddArc(CFst fst, int state, CArc arc)
   fst_->AddArc(state, * (StdArc *)(arc) );
 }
 
-
+CFst FstCopy(CFst ifst)
+{
+  StdVectorFst * ifst_ = (StdVectorFst*)ifst;
+  return (CFst)((*ifst_).Copy());
+}
 //operation
 void FstCompose(CFst fst1, CFst fst2, CFst ofst)
 {
@@ -53,6 +57,25 @@ void FstDeterminize(CFst fst,  CFst ofst)
   StdVectorFst * ofst_ = (StdVectorFst*)ofst;
   Determinize(*ifst_, ofst_);
 }
+
+void FstRmEpsilon(CFst fst)
+{
+  StdVectorFst * fst_ = (StdVectorFst*)fst;
+  RmEpsilon(fst_);
+}
+
+void FstInvert(CFst fst)
+{
+  StdVectorFst * fst_ = (StdVectorFst*)fst;
+  Invert(fst_);
+}
+
+void FstMinimize(CFst fst)
+{
+  StdVectorFst * fst_ = (StdVectorFst*)fst;
+  Minimize(fst_);
+}
+
 //ArcSort
 void FstArcSortInput(CFst fst)
 {
@@ -84,7 +107,6 @@ int FstWrite(CFst fst, char* filename)
   return fst_->Write(f_str);
 }
 
-
 void FstSetInputSymbols(CFst fst, CSymbolTable st){
   StdVectorFst * fst_ = (StdVectorFst*)fst;
   SymbolTable * st_ = (SymbolTable * ) st;
@@ -111,6 +133,13 @@ CSymbolTable FstOutputSymbols(CFst fst)
 }
 
 //SymbolTable API
+CSymbolTable SymbolTableInit()
+{
+  SymbolTable *st = new SymbolTable();
+  return (CSymbolTable)st;
+}
+
+
 int SymbolTableEqual(CSymbolTable st1, CSymbolTable st2)
 {
   SymbolTable * st1_ = (SymbolTable *) st1;
@@ -169,6 +198,20 @@ int SymbolTableHasSymbol(CSymbolTable st, char *symbol){
   {
     return 0;
   }
+}
+
+
+int SymbolTableAddSymbol(CSymbolTable st, char *symbol)
+{
+   SymbolTable * st_ = (SymbolTable*) st;
+   return st_->AddSymbol(symbol);
+}
+
+int SymbolTableAddSymbolKey(CSymbolTable st, char *symbol, int key)
+{
+   SymbolTable * st_ = (SymbolTable*) st;
+   st_->AddSymbol(symbol, key);
+   return key;
 }
 
 CSymbolTable SymbolTableReadText(char *filename)
