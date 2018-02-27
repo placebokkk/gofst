@@ -156,6 +156,16 @@ func (f *Fst) SetOutputSymbols(st SymbolTable) {
 	f.osyms = st
 }
 
+//GetInputSymbols set FST output SymbolTable
+func (f *Fst) InputSymbols() SymbolTable {
+	return f.isyms
+}
+
+//GetOutputSymbols set FST output SymbolTable
+func (f *Fst) OutputSymbols() SymbolTable {
+	return f.osyms
+}
+
 //FstRead read FST from file
 func FstRead(filename string) Fst {
 	var ret Fst
