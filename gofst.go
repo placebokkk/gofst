@@ -63,6 +63,7 @@ func (f Fst) AddArcRaw(stateId int, arc Arc) {
 	C.FstAddArc(f.cfst, C.int(stateId), arc.carc)
 }
 
+//memory leak here, looks like problem in SymbolTable funcs.
 func (f Fst) AddArc(src int, tgt int, isym string, osym string, weight float64) {
 	var ilabel, olabel int
 	if f.isyms.HasSymbol(isym) {
@@ -76,6 +77,12 @@ func (f Fst) AddArc(src int, tgt int, isym string, osym string, weight float64) 
 		olabel = f.osyms.AddSymbol(osym)
 	}
 	arc := ArcInit(int(ilabel), int(olabel), weight, tgt)
+	C.FstAddArc(f.cfst, C.int(src), arc.carc)
+}
+
+//memory leak free variant of adding arc
+func (f Fst) AddArcBySymbolKey(src int, tgt int, isym int, osym int, weight float64) {
+	arc := ArcInit(isym, osym, weight, tgt)
 	C.FstAddArc(f.cfst, C.int(src), arc.carc)
 }
 
@@ -186,7 +193,7 @@ func (st SymbolTable) FindKey(symbol string) int {
 	return int(C.SymbolTableFindKey(st.csyms, C.CString(symbol)))
 }
 
-//mempry leak here if do not free the csymbol?
+//memory leak here, what causes it? maybe csymbol?
 func (st SymbolTable) FindSymbol(key int) string {
 	//defer C.FreeString(csymbol)
 	return C.GoString(C.SymbolTableFindSymbol(st.csyms, C.int(key)))
