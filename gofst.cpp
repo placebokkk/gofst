@@ -5,6 +5,7 @@
 #include <string>
 
 using namespace fst;
+using std::string;
 
 //FST API
 CFst FstInit()
