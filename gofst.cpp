@@ -171,6 +171,12 @@ CSymbolTable SymbolTableInit()
   return (CSymbolTable)st;
 }
 
+void SymbolTableFree(CSymbolTable st)
+{
+  SymbolTable * st_ = (SymbolTable*)st;
+  delete st_;
+}
+
 
 int SymbolTableEqual(CSymbolTable st1, CSymbolTable st2)
 {
@@ -203,10 +209,7 @@ char* SymbolTableFindSymbol(CSymbolTable st, int key)
   
   SymbolTable * st_ = (SymbolTable*) st;
   string symbol = st_->Find(key);
-  int l = symbol.length() + 1;
-  char *c =  new char[l];
-  strcpy(c, symbol.c_str());
-  return c;
+  return (char *)(symbol.c_str());
 }
 
 int SymbolTableHasKey(CSymbolTable st, int key){
@@ -279,6 +282,12 @@ CStateIterator StateIteratorInit(CFst fst)
   return (CStateIterator)siter;
 }
 
+void StateIteratorFree(CStateIterator siter)
+{
+  StateIterator<StdFst> * siter_ = (StateIterator<StdFst>*)siter;
+  delete siter_;
+}
+
 void StateIteratorNext(CStateIterator si)
 {
   StateIterator<StdFst> * siter = (StateIterator<StdFst> *)si;
@@ -303,6 +312,12 @@ CArc ArcInit(int ilabel,int olabel,float weight,int state_id)
 {
   StdArc * arc = new StdArc(ilabel, olabel, weight, state_id);
   return (CArc*) arc;
+}
+
+void ArcFree(CArc arc)
+{
+  StdArc * arc_ = (StdArc*)arc;
+  delete arc_;
 }
 
 int ArcGetILabel(CArc arc) {
@@ -334,6 +349,12 @@ CArcIterator ArcIteratorInit(CFst fst, CStateId state_id)
   StdVectorFst * fst_ = (StdVectorFst*)fst;
   ArcIterator<Fst<StdArc>> * aiter = new ArcIterator<Fst<StdArc>>(*fst_, state_id);
   return (CArcIterator)aiter;
+}
+
+void ArcIteratorFree(CArcIterator aiter)
+{
+  ArcIterator<Fst<StdArc>> * aiter_ = (ArcIterator<Fst<StdArc>>*)aiter;
+  delete aiter_;
 }
 
 void ArcIteratorNext(CArcIterator ai)

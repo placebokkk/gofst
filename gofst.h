@@ -59,6 +59,7 @@ extern "C" {
 
   /**********Symboltable**********/
   CSymbolTable SymbolTableInit(void);
+  void SymbolTableFree(CSymbolTable st);
 
   int SymbolTableEqual(CSymbolTable st1, CSymbolTable st2);
 
@@ -84,6 +85,7 @@ extern "C" {
   typedef int CStateId;
   typedef void* CStateIterator;
   CStateIterator StateIteratorInit(CFst fst);
+  void StateIteratorFree(CStateIterator aiter);
   void StateIteratorNext(CStateIterator si);
   CStateId StateIteratorValue(CStateIterator si);
   int StateIteratorDone(CStateIterator si);
@@ -96,7 +98,7 @@ extern "C" {
 
   /**********Arc**********/
   CArc ArcInit(int ilabel,int olabel,float weight,int state_id);
-
+  void ArcFree(CArc arc);
   int ArcGetILabel(CArc arc);
   int ArcGetOLabel(CArc arc);
   float ArcGetWeight(CArc arc);
@@ -105,6 +107,7 @@ extern "C" {
   
   typedef void* CArcIterator;
   CArcIterator ArcIteratorInit(CFst fst, int state_id);
+  void ArcIteratorFree(CArcIterator aiter);
   void ArcIteratorNext(CArcIterator ai);
   CArc ArcIteratorValue(CArcIterator ai);
   int ArcIteratorDone(CArcIterator ai);
