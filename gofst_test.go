@@ -8,13 +8,14 @@ import (
 
 func TestBasic(t *testing.T) {
 	fst := FstInit()
+	defer fst.Free()
 	fst.AddState()
 	fst.SetStart(0)
-	fst.Free()
 }
 
 func TestIsFinal(t *testing.T) {
 	fst := FstInit()
+	defer fst.Free()
 	fst.AddState()
 	fst.AddState()
 	fst.AddState()
@@ -61,7 +62,9 @@ func TestMinimize(t *testing.T) {
 func TestStateIterator(t *testing.T) {
 	input := FstRead("ex01/Marsman_t.fst")
 	fmt.Println("start state iterate")
-	for siter := StateIteratorInit(input); !siter.Done(); siter.Next() {
+	siter := StateIteratorInit(input)
+	defer siter.Free()
+	for ; !siter.Done(); siter.Next() {
 		fmt.Println(siter.Value())
 	}
 }
@@ -72,7 +75,9 @@ func TestArcIterator(t *testing.T) {
 	for siter := StateIteratorInit(input); !siter.Done(); siter.Next() {
 		state := siter.Value()
 		fmt.Println(state)
-		for aiter := ArcIteratorInit(input, state); !aiter.Done(); aiter.Next() {
+		aiter := ArcIteratorInit(input, state)
+		defer aiter.Free()
+		for ; !aiter.Done(); aiter.Next() {
 			arc := aiter.Value()
 			fmt.Println(arc.GetILabel(), arc.GetOLabel(), arc.GetWeight(), arc.GetNextState())
 		}
@@ -99,6 +104,7 @@ func TestSymbolTableRead(t *testing.T) {
 
 func TestSymbolTableWrite(t *testing.T) {
 	syms := SymbolTableInit()
+	defer syms.Free()
 
 	syms.AddSymbolKey("开始", 9)
 	fmt.Println("add 开始")
@@ -124,6 +130,7 @@ func TestSymbolTableWrite(t *testing.T) {
 
 func TestSymbolTableHasSymbol(t *testing.T) {
 	syms := SymbolTableInit()
+	defer syms.Free()
 
 	syms.AddSymbolKey("开始", 9)
 	fmt.Println("add 开始")
@@ -151,6 +158,11 @@ func TestSymbolTableHasSymbol(t *testing.T) {
 func TestSymbolTableSetSymbolTable(t *testing.T) {
 	fst := FstInit()
 	isyms := SymbolTableInit()
+	defer func() {
+		isyms.Free()
+		fst.Free()
+	}()
+
 	fst.SetInputSymbols(isyms)
 
 	syms1 := fst.isyms
@@ -178,8 +190,15 @@ func TestSymbolTableSetSymbolTable(t *testing.T) {
 
 func TestFstAddArc(t *testing.T) {
 	fst := FstInit()
-	fst.SetInputSymbols(SymbolTableInit())
-	fst.SetOutputSymbols(SymbolTableInit())
+	isyms := SymbolTableInit()
+	osyms := SymbolTableInit()
+	defer func() {
+		defer fst.Free()
+		defer isyms.Free()
+		defer osyms.Free()
+	}()
+	fst.SetInputSymbols(isyms)
+	fst.SetOutputSymbols(osyms)
 
 	fst.AddState()
 	fst.AddState()
@@ -213,10 +232,14 @@ func TestFstAddArc(t *testing.T) {
 	fst = FstRead("addarc.fst")
 
 	fmt.Println("start state iterate")
-	for siter := StateIteratorInit(fst); !siter.Done(); siter.Next() {
+	siter := StateIteratorInit(fst)
+	defer siter.Free()
+	for ; !siter.Done(); siter.Next() {
 		state := siter.Value()
 		fmt.Println(state)
-		for aiter := ArcIteratorInit(fst, state); !aiter.Done(); aiter.Next() {
+		aiter := ArcIteratorInit(fst, state)
+		defer aiter.Free()
+		for ; !aiter.Done(); aiter.Next() {
 			arc := aiter.Value()
 			fmt.Println(arc.GetILabel(), arc.GetOLabel(), arc.GetWeight(), arc.GetNextState())
 		}
@@ -226,6 +249,7 @@ func TestFstAddArc(t *testing.T) {
 
 func TestFstPaths(t *testing.T) {
 	fst := FstInit()
+	defer fst.Free()
 	fst.SetInputSymbols(SymbolTableInit())
 	fst.SetOutputSymbols(SymbolTableInit())
 
