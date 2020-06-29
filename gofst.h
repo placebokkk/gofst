@@ -55,7 +55,7 @@ extern "C" {
   //I/O
   CFst FstRead(char* filename);
   int FstWrite(CFst fst, char* filename);
-
+  CFst FstReadFromStream(char* buffer, int n);
 
   /**********Symboltable**********/
   CSymbolTable SymbolTableInit(void);

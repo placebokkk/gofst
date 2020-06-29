@@ -3,9 +3,19 @@
 #include <fst/fstlib.h>
 #include "gofst.h"
 #include <string>
+#include <istream>
+#include <streambuf>
 
 using namespace fst;
 using std::string;
+
+//membuf helps to create isream from char*
+struct membuf : std::streambuf
+{
+    membuf(char* begin, char* end) {
+        this->setg(begin, begin, end);
+    }
+};
 
 //FST API
 CFst FstInit()
@@ -129,6 +139,15 @@ CFst FstRead(char* filename)
   string f_str = filename;
   StdVectorFst *fst_ = StdVectorFst::Read(f_str);
   return (CFst)fst_;
+}
+
+CFst FstReadFromStream(char* buffer, int n)
+{
+    membuf sbuf(buffer, buffer + n);
+    std::istream in(&sbuf);
+    fst::FstReadOptions opt;
+    StdVectorFst *fst_ = StdVectorFst::Read(in, opt);
+    return (CFst)fst_;
 }
 
 
