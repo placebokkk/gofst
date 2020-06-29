@@ -4,7 +4,9 @@ package gofst
 // #cgo CXXFLAGS: -std=c++11
 // #cgo LDFLAGS: -L/usr/local/lib -lfst
 // #include "gofst.h"
+// #include "stdlib.h"
 import "C"
+import "unsafe"
 
 //Fst structy
 type Fst struct {
@@ -77,12 +79,14 @@ func (f Fst) AddArc(src int, tgt int, isym string, osym string, weight float64) 
 		olabel = f.osyms.AddSymbol(osym)
 	}
 	arc := ArcInit(int(ilabel), int(olabel), weight, tgt)
+	defer arc.Free()
 	C.FstAddArc(f.cfst, C.int(src), arc.carc)
 }
 
 //memory leak free variant of adding arc
 func (f Fst) AddArcBySymbolKey(src int, tgt int, isym int, osym int, weight float64) {
 	arc := ArcInit(isym, osym, weight, tgt)
+	defer arc.Free()
 	C.FstAddArc(f.cfst, C.int(src), arc.carc)
 }
 
@@ -150,7 +154,9 @@ func (f Fst) ArcSortOuput() {
 
 //Write write FST to file
 func (f Fst) Write(filename string) {
-	C.FstWrite(f.cfst, (C.CString)(filename))
+	cs := (C.CString)(filename)
+	defer C.free(unsafe.Pointer(cs))
+	C.FstWrite(f.cfst, cs)
 }
 
 //SetInputSymbols set FST input SymbolTable
@@ -176,7 +182,18 @@ func (f *Fst) OutputSymbols() SymbolTable {
 //FstRead read FST from file
 func FstRead(filename string) Fst {
 	var ret Fst
-	ret.cfst = C.FstRead((C.CString)(filename))
+	cs := (C.CString)(filename)
+	defer C.free(unsafe.Pointer(cs))
+	ret.cfst = C.FstRead(cs)
+	return ret
+}
+
+//FstRead create FST from its byte representation
+func FstReadFromBytes(content []byte) Fst {
+	var ret Fst
+	cb := C.CBytes(content)
+	defer C.free(cb)
+	ret.cfst = C.FstReadFromStream((*C.char)(cb), C.int(len(content)))
 	return ret
 }
 
@@ -189,13 +206,17 @@ func SymbolTableInit() SymbolTable {
 	return ret
 }
 
-func (st SymbolTable) FindKey(symbol string) int {
-	return int(C.SymbolTableFindKey(st.csyms, C.CString(symbol)))
+func (st SymbolTable) Free() {
+	C.SymbolTableFree(st.csyms)
 }
 
-//memory leak here, what causes it? maybe csymbol?
+func (st SymbolTable) FindKey(symbol string) int {
+	cs := (C.CString)(symbol)
+	defer C.free(unsafe.Pointer(cs))
+	return int(C.SymbolTableFindKey(st.csyms, cs))
+}
+
 func (st SymbolTable) FindSymbol(key int) string {
-	//defer C.FreeString(csymbol)
 	return C.GoString(C.SymbolTableFindSymbol(st.csyms, C.int(key)))
 
 }
@@ -205,32 +226,44 @@ func (st SymbolTable) HasKey(key int) bool {
 }
 
 func (st SymbolTable) HasSymbol(symbol string) bool {
-	return C.SymbolTableHasSymbol(st.csyms, C.CString(symbol)) > 0
+	cs := (C.CString)(symbol)
+	defer C.free(unsafe.Pointer(cs))
+	return C.SymbolTableHasSymbol(st.csyms, cs) > 0
 }
 
 func (st SymbolTable) AddSymbol(symbol string) int {
-	return int(C.SymbolTableAddSymbol(st.csyms, C.CString(symbol)))
+	cs := (C.CString)(symbol)
+	defer C.free(unsafe.Pointer(cs))
+	return int(C.SymbolTableAddSymbol(st.csyms, cs))
 }
 
 func (st SymbolTable) AddSymbolKey(symbol string, key int) int {
-	return int(C.SymbolTableAddSymbolKey(st.csyms, C.CString(symbol), C.int(key)))
+	cs := (C.CString)(symbol)
+	defer C.free(unsafe.Pointer(cs))
+	return int(C.SymbolTableAddSymbolKey(st.csyms, cs, C.int(key)))
 }
 
 func SymbolTableReadText(filename string) SymbolTable {
 	var ret SymbolTable
-	ret.csyms = C.SymbolTableReadText((C.CString)(filename))
+	cs := (C.CString)(filename)
+	defer C.free(unsafe.Pointer(cs))
+	ret.csyms = C.SymbolTableReadText(cs)
 	return ret
 }
 
 func SymbolTableRead(filename string) SymbolTable {
 	var ret SymbolTable
-	ret.csyms = C.SymbolTableReadBinary((C.CString)(filename))
+	cs := (C.CString)(filename)
+	defer C.free(unsafe.Pointer(cs))
+	ret.csyms = C.SymbolTableReadBinary(cs)
 	return ret
 }
 
 //Write write FST to file
 func (st SymbolTable) Write(filename string) {
-	C.SymbolTableWrite(st.csyms, (C.CString)(filename))
+	cs := (C.CString)(filename)
+	defer C.free(unsafe.Pointer(cs))
+	C.SymbolTableWrite(st.csyms, cs)
 }
 
 // Iterator
@@ -259,6 +292,10 @@ func StateIteratorInit(fst Fst) StateIterator {
 	var siter StateIterator
 	siter.csiter = C.StateIteratorInit(fst.cfst)
 	return siter
+}
+
+func (siter StateIterator) Free() {
+	C.StateIteratorFree(siter.csiter)
 }
 
 func (siter StateIterator) Next() {
@@ -314,10 +351,18 @@ func ArcInit(ilabel int, olabel int, weight float64, state_id int) Arc {
 	return ret
 }
 
+func (arc Arc) Free() {
+	C.ArcFree(arc.carc)
+}
+
 func ArcIteratorInit(fst Fst, state_id int) ArcIterator {
 	var aiter ArcIterator
 	aiter.caiter = C.ArcIteratorInit(fst.cfst, C.int(state_id))
 	return aiter
+}
+
+func (aiter ArcIterator) Free() {
+	C.ArcIteratorFree(aiter.caiter)
 }
 
 func (aiter ArcIterator) Next() {
