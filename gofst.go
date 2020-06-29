@@ -189,12 +189,12 @@ func FstRead(filename string) Fst {
 }
 
 //FstRead create FST from its byte representation
-func FstReadFromBytes(content []byte) Fst {
+func FstReadFromBytes(content []byte) (Fst, bool) {
 	var ret Fst
 	cb := C.CBytes(content)
 	defer C.free(cb)
 	ret.cfst = C.FstReadFromStream((*C.char)(cb), C.int(len(content)))
-	return ret
+	return ret, ret.cfst != nil
 }
 
 //SymbolTable
