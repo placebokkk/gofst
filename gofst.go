@@ -1,7 +1,7 @@
 //Package gofst
 package gofst
 
-// #cgo CXXFLAGS: -std=c++11
+// #cgo CXXFLAGS: -std=c++17
 // #cgo LDFLAGS: -L/usr/local/lib -lfst
 // #include "gofst.h"
 // #include "stdlib.h"
