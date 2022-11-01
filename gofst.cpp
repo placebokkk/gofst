@@ -223,12 +223,14 @@ int SymbolTableFindKey(CSymbolTable st, char *symbol)
   SymbolTable * st_ = (SymbolTable*) st;
   return st_->Find(symbol);
 }
+
 char* SymbolTableFindSymbol(CSymbolTable st, int key)
 {
-  
   SymbolTable * st_ = (SymbolTable*) st;
   string symbol = st_->Find(key);
-  return (char *)(symbol.c_str());
+  char *symbol_cstr = new char[symbol.size()];
+  strncpy(symbol_cstr, symbol.c_str(), symbol.size());
+  return symbol_cstr;
 }
 
 int SymbolTableHasKey(CSymbolTable st, int key){
