@@ -228,8 +228,9 @@ char* SymbolTableFindSymbol(CSymbolTable st, int key)
 {
   SymbolTable * st_ = (SymbolTable*) st;
   string symbol = st_->Find(key);
-  char *symbol_cstr = new char[symbol.size()];
+  char *symbol_cstr = new char[symbol.size() + 1];
   strncpy(symbol_cstr, symbol.c_str(), symbol.size());
+  symbol_cstr[symbol.size()] = '\0';
   return symbol_cstr;
 }
 
